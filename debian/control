@@ -26,4 +26,4 @@ Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends}
 Built-Using: ${misc:Built-Using}
-Description: Convert OCI images to EROFS filesystems. (program)
+Description: Convert OCI images into EROFS filesystems completely in userspace. (program)

@@ -1,0 +1,29 @@
+Source: oci2erofs
+Section: golang
+Priority: optional
+Maintainer: Damian Peckett <damian@pecke.tt>
+Uploaders: Damian Peckett <damian@pecke.tt>
+Rules-Requires-Root: no
+Build-Depends: debhelper-compat (= 13),
+               dh-sequence-golang,
+               golang-any,
+               golang-github-dpeckett-archivefs-dev,
+               golang-github-opencontainers-image-spec-dev (>= 1.1.0-2~bpo12+1),
+               golang-github-rogpeppe-go-internal-dev,
+               golang-github-stretchr-testify-dev,
+               golang-github-dpeckett-uncompr-dev,
+               golang-github-urfave-cli-v2-dev
+Testsuite: autopkgtest-pkg-go
+Standards-Version: 4.6.2
+Vcs-Browser: https://github.com/dpeckett/oci2erofs
+Vcs-Git: https://github.com/dpeckett/oci2erofs.git
+Homepage: https://github.com/dpeckett/oci2erofs
+XS-Go-Import-Path: github.com/dpeckett/oci2erofs
+
+Package: oci2erofs
+Section: utils
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Built-Using: ${misc:Built-Using}
+Description: Convert OCI images to EROFS filesystems. (program)

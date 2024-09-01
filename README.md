@@ -37,7 +37,7 @@ To create an EROFS image from a directory containing an OCI image:
 oci2erofs -o image.erofs ./oci-image
 ```
 
-oci2erofs also supports converting an OCI image from compressed tarballs:
+Tarballs are also supported:
 
 ```shell
 oci2erofs -o image.erofs ./oci-image.tar

@@ -19,18 +19,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
+	"time"
 
 	"github.com/dpeckett/archivefs/erofs"
 	"github.com/dpeckett/archivefs/tarfs"
 	"github.com/dpeckett/oci2erofs/internal/constants"
 	"github.com/dpeckett/oci2erofs/internal/oci"
 	"github.com/dpeckett/oci2erofs/internal/util"
+	"github.com/dpeckett/telemetry"
+	"github.com/dpeckett/telemetry/v1alpha1"
 	"github.com/dpeckett/uncompr"
 	"github.com/urfave/cli/v2"
 )
@@ -52,6 +57,53 @@ func main() {
 		return nil
 	}
 
+	// Collect anonymized usage statistics.
+	var telemetryReporter *telemetry.Reporter
+
+	initTelemetry := func(c *cli.Context) error {
+		telemetryReporter = telemetry.NewReporter(c.Context, slog.Default(), telemetry.Configuration{
+			BaseURL: constants.TelemetryURL,
+			Tags:    []string{"oci2erofs"},
+		})
+
+		// Some basic system information.
+		info := map[string]string{
+			"os":      runtime.GOOS,
+			"arch":    runtime.GOARCH,
+			"num_cpu": fmt.Sprintf("%d", runtime.NumCPU()),
+			"version": constants.Version,
+		}
+
+		telemetryReporter.ReportEvent(&v1alpha1.TelemetryEvent{
+			Kind:   v1alpha1.TelemetryEventKindInfo,
+			Name:   "ApplicationStart",
+			Values: info,
+		})
+
+		return nil
+	}
+
+	shutdownTelemetry := func(c *cli.Context) error {
+		if telemetryReporter == nil {
+			return nil
+		}
+
+		telemetryReporter.ReportEvent(&v1alpha1.TelemetryEvent{
+			Kind: v1alpha1.TelemetryEventKindInfo,
+			Name: "ApplicationStop",
+		})
+
+		// Don't want to block the shutdown of the application for too long.
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		if err := telemetryReporter.Shutdown(ctx); err != nil {
+			slog.Error("Failed to close telemetry reporter", slog.Any("error", err))
+		}
+
+		return nil
+	}
+
 	app := &cli.App{
 		Name:      "oci2erofs",
 		Usage:     "Convert OCI images into EROFS filesystems",
@@ -69,7 +121,8 @@ func main() {
 				Usage:   "Image reference (if more than one image is present)",
 			},
 		}, persistentFlags...),
-		Before: util.BeforeAll(initLogger),
+		Before: util.BeforeAll(initLogger, initTelemetry),
+		After:  shutdownTelemetry,
 		Action: func(c *cli.Context) error {
 			if c.NArg() != 1 {
 				slog.Error("Image path is required")

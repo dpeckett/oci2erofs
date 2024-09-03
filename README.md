@@ -43,6 +43,13 @@ Tarballs are also supported:
 oci2erofs -o image.erofs ./oci-image.tar
 ```
 
+## Telemetry
+
+By default oci2erofs gathers anonymous crash and usage statistics. This anonymized
+data is processed on our servers within the EU and is not shared with third
+parties. You can opt out of telemetry by setting the `DO_NOT_TRACK=1`
+environment variable.
+
 ## Limitations
 
 - No support for compression or extended attributes.

@@ -8,10 +8,11 @@ Build-Depends: debhelper-compat (= 13),
                dh-sequence-golang,
                golang-any,
                golang-github-dpeckett-archivefs-dev,
+               golang-github-dpeckett-telemetry-dev,
+               golang-github-dpeckett-uncompr-dev,
                golang-github-opencontainers-image-spec-dev (>= 1.1.0-2~bpo12+1),
                golang-github-rogpeppe-go-internal-dev,
                golang-github-stretchr-testify-dev,
-               golang-github-dpeckett-uncompr-dev,
                golang-github-urfave-cli-v2-dev
 Testsuite: autopkgtest-pkg-go
 Standards-Version: 4.6.2

@@ -67,6 +67,7 @@ package:
   # Build Dependencies
   RUN apt install -y \
     golang-github-dpeckett-archivefs-dev \
+    golang-github-dpeckett-telemetry-dev \
     golang-github-dpeckett-uncompr-dev \
     golang-github-opencontainers-image-spec-dev=1.1.0-2~bpo12+1 \
     golang-github-pierrec-lz4-dev=4.1.18-1~bpo12+1 \

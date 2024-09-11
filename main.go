@@ -27,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/dpeckett/archivefs/erofs"
@@ -190,8 +191,15 @@ func main() {
 
 			outputPath := c.String("output")
 			if outputPath == "" {
-				outputPath = filepath.Base(imagePath) + ".erofs"
+				if fi.IsDir() {
+					outputPath = filepath.Base(imagePath) + ".erofs"
+				} else {
+					outputPath = strings.TrimSuffix(filepath.Base(imagePath), filepath.Ext(imagePath)) + ".erofs"
+				}
 			}
+
+			// Remove the output file if it already exists.
+			_ = os.Remove(outputPath)
 
 			outputFile, err := os.Create(outputPath)
 			if err != nil {

@@ -3,7 +3,7 @@ module github.com/dpeckett/oci2erofs
 go 1.22.0
 
 require (
-	github.com/dpeckett/archivefs v0.10.2
+	github.com/dpeckett/archivefs v0.11.1
 	github.com/dpeckett/telemetry v0.1.2
 	github.com/dpeckett/uncompr v0.5.0
 	github.com/opencontainers/image-spec v1.1.0

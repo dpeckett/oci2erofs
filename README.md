@@ -1,7 +1,6 @@
 # oci2erofs
 
-Convert OCI images into [EROFS](https://erofs.docs.kernel.org/en/latest/) filesystems
-completely in userspace.
+Convert OCI images into [EROFS](https://erofs.docs.kernel.org/en/latest/) filesystems.
 
 ## Installation
 

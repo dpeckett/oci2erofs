@@ -32,12 +32,12 @@ import (
 
 	"github.com/dpeckett/archivefs/erofs"
 	"github.com/dpeckett/archivefs/tarfs"
-	"github.com/dpeckett/oci2erofs/internal/constants"
-	"github.com/dpeckett/oci2erofs/internal/oci"
-	"github.com/dpeckett/oci2erofs/internal/util"
 	"github.com/dpeckett/telemetry"
 	"github.com/dpeckett/telemetry/v1alpha1"
 	"github.com/dpeckett/uncompr"
+	"github.com/immutos/oci2erofs/internal/constants"
+	"github.com/immutos/oci2erofs/internal/oci"
+	"github.com/immutos/oci2erofs/internal/util"
 	"github.com/urfave/cli/v2"
 )
 

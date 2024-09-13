@@ -21,7 +21,7 @@ sudo apt install oci2erofs
 
 Download statically linked binaries from the GitHub releases page: 
 
-[Latest Release](https://github.com/dpeckett/oci2erofs/releases/latest)
+[Latest Release](https://github.com/immutos/oci2erofs/releases/latest)
 
 ## Usage
 

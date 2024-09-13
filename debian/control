@@ -16,10 +16,10 @@ Build-Depends: debhelper-compat (= 13),
                golang-github-urfave-cli-v2-dev
 Testsuite: autopkgtest-pkg-go
 Standards-Version: 4.6.2
-Vcs-Browser: https://github.com/dpeckett/oci2erofs
-Vcs-Git: https://github.com/dpeckett/oci2erofs.git
-Homepage: https://github.com/dpeckett/oci2erofs
-XS-Go-Import-Path: github.com/dpeckett/oci2erofs
+Vcs-Browser: https://github.com/immutos/oci2erofs
+Vcs-Git: https://github.com/immutos/oci2erofs.git
+Homepage: https://github.com/immutos/oci2erofs
+XS-Go-Import-Path: github.com/immutos/oci2erofs
 
 Package: oci2erofs
 Section: utils

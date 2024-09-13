@@ -27,8 +27,8 @@ import (
 	"path/filepath"
 
 	"github.com/dpeckett/archivefs/tarfs"
-	"github.com/dpeckett/oci2erofs/internal/overlayfs"
 	"github.com/dpeckett/uncompr"
+	"github.com/immutos/oci2erofs/internal/overlayfs"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 

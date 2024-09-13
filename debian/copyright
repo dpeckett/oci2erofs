@@ -1,5 +1,5 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: https://github.com/dpeckett/oci2erofs
+Source: https://github.com/immutos/oci2erofs
 Upstream-Name: oci2erofs
 Upstream-Contact: Damian Peckett <damian@pecke.tt>
 

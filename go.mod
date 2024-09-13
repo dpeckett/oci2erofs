@@ -1,4 +1,4 @@
-module github.com/dpeckett/oci2erofs
+module github.com/immutos/oci2erofs
 
 go 1.22.0
 

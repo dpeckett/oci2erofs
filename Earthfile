@@ -25,7 +25,7 @@ build:
   RUN go mod download
   COPY . .
   ARG VERSION=dev
-  RUN CGO_ENABLED=0 go build --ldflags "-s -X 'github.com/dpeckett/oci2erofs/internal/constants.Version=${VERSION}'" -o oci2erofs main.go
+  RUN CGO_ENABLED=0 go build --ldflags "-s -X 'github.com/immutos/oci2erofs/internal/constants.Version=${VERSION}'" -o oci2erofs main.go
   SAVE ARTIFACT ./oci2erofs AS LOCAL dist/oci2erofs-${GOOS}-${GOARCH}
 
 tidy:

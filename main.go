@@ -30,14 +30,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/dpeckett/archivefs/erofs"
 	"github.com/dpeckett/archivefs/tarfs"
 	"github.com/dpeckett/telemetry"
 	"github.com/dpeckett/telemetry/v1alpha1"
 	"github.com/dpeckett/uncompr"
 	"github.com/immutos/oci2erofs/internal/constants"
+	"github.com/immutos/oci2erofs/internal/docker"
 	"github.com/immutos/oci2erofs/internal/oci"
 	"github.com/immutos/oci2erofs/internal/util"
+	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/urfave/cli/v2"
 )
 
@@ -121,6 +124,11 @@ func main() {
 				Aliases: []string{"r"},
 				Usage:   "Image reference (if more than one image is present)",
 			},
+			&cli.StringFlag{
+				Name:    "platform",
+				Aliases: []string{"p"},
+				Usage:   "Target platform in the 'os/arch' format",
+			},
 		}, persistentFlags...),
 		Before: util.BeforeAll(initLogger, initTelemetry),
 		After:  shutdownTelemetry,
@@ -179,9 +187,41 @@ func main() {
 				}
 			}
 
-			rootFS, closeAll, err := oci.LoadImage(tempDir, imageFS, c.String("ref"))
-			if err != nil {
-				return fmt.Errorf("failed to load image: %w", err)
+			var platform *ocispecs.Platform
+			if c.String("platform") != "" {
+				parsed, err := platforms.Parse(c.String("platform"))
+				if err != nil {
+					return fmt.Errorf("failed to parse platform: %w", err)
+				}
+				platform = &parsed
+			}
+
+			// Determine if the image is a Docker or OCI image.
+			var dockerArchive, ociArchive bool
+			if _, err := imageFS.Open("manifest.json"); err == nil {
+				dockerArchive = true
+			}
+			if !dockerArchive {
+				if _, err := imageFS.Open("oci-layout"); err == nil {
+					ociArchive = true
+				}
+			}
+			if !dockerArchive && !ociArchive {
+				return fmt.Errorf("image is not a valid OCI or Docker image")
+			}
+
+			var rootFS fs.FS
+			var closeAll func() error
+			if dockerArchive {
+				rootFS, closeAll, err = docker.LoadImage(tempDir, imageFS, c.String("ref"), platform)
+				if err != nil {
+					return fmt.Errorf("failed to load Docker image: %w", err)
+				}
+			} else {
+				rootFS, closeAll, err = oci.LoadImage(tempDir, imageFS, c.String("ref"), platform)
+				if err != nil {
+					return fmt.Errorf("failed to load OCI image: %w", err)
+				}
 			}
 			defer func() {
 				if err := closeAll(); err != nil {

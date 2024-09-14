@@ -67,6 +67,7 @@ package:
     && apt update
   # Build Dependencies
   RUN apt install -y \
+    golang-github-containerd-containerd-dev \
     golang-github-dpeckett-archivefs-dev \
     golang-github-dpeckett-telemetry-dev \
     golang-github-dpeckett-uncompr-dev \

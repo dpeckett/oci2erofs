@@ -20,27 +20,29 @@ package oci
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/dpeckett/archivefs/tarfs"
 	"github.com/dpeckett/uncompr"
 	"github.com/immutos/oci2erofs/internal/overlayfs"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
-// LoadImage loads an OCI image from the given imageFS and ref.
-// It returns an overlayfs.FS of the images root filesystem, a function to
+// LoadImage loads an OCI image from the given imageFS, ref, and platform.
+// It returns an overlayfs.FS of the image's root filesystem, a function to
 // close the image, and an error if any.
-func LoadImage(tempDir string, imageFS fs.FS, ref string) (fs.FS, func() error, error) {
+func LoadImage(tempDir string, imageFS fs.FS, ref string, platform *ocispecs.Platform) (fs.FS, func() error, error) {
 	if err := verifyImageLayoutVersion(imageFS); err != nil {
 		return nil, nil, err
 	}
 
-	manifest, err := manifestForRef(imageFS, ref)
+	manifest, err := manifestForRef(imageFS, ref, platform)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,26 +110,32 @@ func loadLayer(tempDir string, imageFS fs.FS, layerPath string) (fs.FS, func() e
 	return fsys, decompressedLayerFile.Close, nil
 }
 
-func manifestForRef(imageFS fs.FS, ref string) (*v1.Manifest, error) {
+func manifestForRef(imageFS fs.FS, ref string, platform *ocispecs.Platform) (*ocispecs.Manifest, error) {
 	indexFile, err := imageFS.Open("index.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open index: %w", err)
 	}
 	defer indexFile.Close()
 
-	var index v1.Index
+	var index ocispecs.Index
 	if err := json.NewDecoder(indexFile).Decode(&index); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal index: %w", err)
 	}
 
-	var manifestDescriptor *v1.Descriptor
+	if len(index.Manifests) == 0 {
+		return nil, errors.New("no manifests found")
+	}
+
+	var manifestDescriptor *ocispecs.Descriptor
 	if ref == "" {
-		if len(index.Manifests) > 0 {
-			manifestDescriptor = &index.Manifests[0]
+		if len(index.Manifests) > 1 {
+			return nil, errors.New("multiple manifests found, ref must be specified")
 		}
+
+		manifestDescriptor = &index.Manifests[0]
 	} else {
 		for _, desc := range index.Manifests {
-			if desc.Annotations[v1.AnnotationRefName] == ref {
+			if desc.Annotations[ocispecs.AnnotationRefName] == ref {
 				desc := desc
 				manifestDescriptor = &desc
 				break
@@ -138,6 +146,48 @@ func manifestForRef(imageFS fs.FS, ref string) (*v1.Manifest, error) {
 		return nil, fmt.Errorf("no manifest found for ref %s", ref)
 	}
 
+	if manifestDescriptor.MediaType == ocispecs.MediaTypeImageIndex {
+		imageIndexPath := filepath.Join("blobs", string(manifestDescriptor.Digest.Algorithm()), manifestDescriptor.Digest.Encoded())
+
+		imageIndexFile, err := imageFS.Open(imageIndexPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open image index file: %w", err)
+		}
+		defer imageIndexFile.Close()
+
+		var imageIndex ocispecs.Index
+		if err := json.NewDecoder(imageIndexFile).Decode(&imageIndex); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal image index: %w", err)
+		}
+
+		// Find the manifest for the platform.
+		manifestDescriptor = nil
+		if platform == nil {
+			if len(imageIndex.Manifests) > 0 {
+				manifestDescriptor = &imageIndex.Manifests[0]
+			}
+		} else {
+			for _, desc := range imageIndex.Manifests {
+				if platforms.NewMatcher(*platform).Match(*desc.Platform) {
+					desc := desc
+					manifestDescriptor = &desc
+					break
+				}
+			}
+		}
+
+		if manifestDescriptor == nil {
+			return nil, fmt.Errorf("no manifest found for platform %s", platforms.Format(*platform))
+		}
+	} else if manifestDescriptor.MediaType == ocispecs.MediaTypeImageManifest {
+		// Check if the platform is correct.
+		if platform != nil && !platforms.NewMatcher(*platform).Match(*manifestDescriptor.Platform) {
+			return nil, errors.New("platform is not present in image")
+		}
+	} else {
+		return nil, fmt.Errorf("unexpected manifest media type: %s", manifestDescriptor.MediaType)
+	}
+
 	manifestPath := filepath.Join("blobs", string(manifestDescriptor.Digest.Algorithm()), manifestDescriptor.Digest.Encoded())
 
 	manifestFile, err := imageFS.Open(manifestPath)
@@ -146,7 +196,7 @@ func manifestForRef(imageFS fs.FS, ref string) (*v1.Manifest, error) {
 	}
 	defer manifestFile.Close()
 
-	var manifest v1.Manifest
+	var manifest ocispecs.Manifest
 	if err := json.NewDecoder(manifestFile).Decode(&manifest); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal manifest: %w", err)
 	}
@@ -168,7 +218,7 @@ func verifyImageLayoutVersion(imageFS fs.FS) error {
 		return fmt.Errorf("failed to unmarshal oci-layout: %w", err)
 	}
 
-	if ociLayout.ImageLayoutVersion != v1.ImageLayoutVersion {
+	if ociLayout.ImageLayoutVersion != ocispecs.ImageLayoutVersion {
 		return fmt.Errorf("unsupported image layout version: %s", ociLayout.ImageLayoutVersion)
 	}
 

@@ -1,0 +1,1 @@
+{"schemaVersion":2,"manifests":[{"mediaType":"application/vnd.oci.image.index.v1+json","digest":"sha256:8a05dbe3e013d3e7cd5ecb83b43c64a4b5ad03334c3f4d9bbfda10c79bf6d6bb","size":2917,"annotations":{"org.opencontainers.image.ref.name":"docker.io/tianon/toybox:0.8.11"}}]}

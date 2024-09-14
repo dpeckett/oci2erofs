@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "config": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "digest": "sha256:2c5e3a87181d4607594866d510b6e00452fb182c75f8f8d3f6aead31bb4fb085",
+    "size": 589
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "digest": "sha256:19254414e43f4316fe9b41a4f407082b557c7f357e973c154217bb981235db9d",
+      "size": 594492
+    }
+  ],
+  "annotations": {
+    "com.docker.official-images.bashbrew.arch": "arm64v8",
+    "org.opencontainers.image.base.name": "scratch",
+    "org.opencontainers.image.created": "2024-08-02T18:05:35Z",
+    "org.opencontainers.image.revision": "4922d021769ad38f171259fbce3a913cf5c863bd",
+    "org.opencontainers.image.source": "https://github.com/tianon/dockerfiles.git#4922d021769ad38f171259fbce3a913cf5c863bd:toybox",
+    "org.opencontainers.image.url": "https://hub.docker.com/r/tianon/toybox",
+    "org.opencontainers.image.version": "0.8.11"
+  }
+}

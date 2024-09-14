@@ -1,6 +1,6 @@
 # oci2erofs
 
-Convert OCI images into [EROFS](https://erofs.docs.kernel.org/en/latest/) filesystems.
+Convert OCI (and Docker) images into [EROFS](https://erofs.docs.kernel.org/en/latest/) filesystems.
 
 ## Installation
 
@@ -14,7 +14,7 @@ Then install oci2erofs:
 
 ```shell
 sudo apt update
-sudo apt install oci2erofs
+sudo apt install -y oci2erofs
 ```
 
 ### GitHub Releases

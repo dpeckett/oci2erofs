@@ -46,17 +46,29 @@ func LoadImage(tempDir string, imageFS fs.FS, ref string, platform *ocispecs.Pla
 	var closers []func() error
 
 	for _, layerDescriptor := range config.RootFS.DiffIDs {
-		layerPath := filepath.Join(strings.TrimPrefix(layerDescriptor, "sha256:") + ".tar")
+		layerDigest := strings.TrimPrefix(layerDescriptor, "sha256:")
 
-		layer, close, err := loadLayer(tempDir, imageFS, layerPath)
-		if err != nil {
-			layerPath += ".gz"
+		potentialLayerPaths := []string{
+			layerDigest + ".tar",
+			filepath.Join("blobs/sha256", layerDigest),
+			filepath.Join(layerDigest, "layer.tar"),
+		}
 
-			var err2 error
-			layer, close, err2 = loadLayer(tempDir, imageFS, layerPath)
-			if err2 != nil {
-				return nil, nil, fmt.Errorf("failed to load layer: %w", err)
+		var actualLayerPath string
+		for _, layerPath := range potentialLayerPaths {
+			if f, err := imageFS.Open(layerPath); err == nil {
+				_ = f.Close()
+				actualLayerPath = layerPath
+				break
 			}
+		}
+		if actualLayerPath == "" {
+			return nil, nil, fmt.Errorf("layer %s not found", layerDigest)
+		}
+
+		layer, close, err := loadLayer(tempDir, imageFS, actualLayerPath)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to load layer %s: %w", layerDigest, err)
 		}
 
 		layers = append(layers, layer)

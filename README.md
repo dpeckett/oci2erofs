@@ -6,7 +6,7 @@ Convert OCI (and Docker) images into [EROFS](https://erofs.docs.kernel.org/en/la
 
 ### From APT
 
-Add my [apt repository](https://github.com/dpeckett/apt.dpeckett.dev?tab=readme-ov-file#usage) to your system.
+Add the [immutos apt repository](https://github.com/immutos/apt?tab=readme-ov-file#usage) to your system.
 
 Then install oci2erofs:
 
